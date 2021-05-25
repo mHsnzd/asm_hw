@@ -48,6 +48,11 @@ x          byte ?                                ; x in switch statement
 ;---------------------------------------------------------
 .code
 main proc
+	mov bl, i                                      ; bl = i
+	cmp bl, [CaseTable]                            ; compares i to 1
+	jl done                                        ; terminate procedure if i<1
+	cmp bl, [CaseTable + 3]                        ; compares i to 4
+	jg done                                        ; terminate procedure if i>4
 	
 	mov rsi, offset ValueTable                     ; rsi points to ValueTable's first element
 	movsx rbx, i                                   ; rbx = i
@@ -55,7 +60,7 @@ main proc
 	mov al, [rsi + rbx]                            ; the ith value from ValueTable    
 	mov x, al                                     
 
-	call  ExitProcess
+done:	call  ExitProcess
 main endp
 
 end
