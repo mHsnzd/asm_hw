@@ -34,7 +34,7 @@ CaseTable byte 1                                 ; table for look up values
           byte 2
 		  byte 3
 		  byte 4
-TableCount byte 4                                ; number of cases 
+TableCount = ($ - CaseTable) / type CaseTable    ; number of cases
 
 ValueTable byte 1                                ; table for values 
            byte 2
@@ -60,25 +60,28 @@ main endp
 
 
 ;---------------------------------------------------------
-SelectCase PROC uses rax rsi rbx                   ; MASM directive to preserve these registers
+SelectCase PROC uses rax rsi rbx rdi                ; MASM directive to preserve these registers
 ; Receives: nothing
 ; Returns: rdx = 0 in case of success and 1 in case of failure. Sets x to the correct value.
 ;          Changes the status flags.
 ; Requires: nothing
 ;---------------------------------------------------------
-	mov rdx, 1                                     ; set rdx to one in case of error
-	mov bl, i                                      ; bl = i
-	cmp bl, [CaseTable]                            ; compares i to 1
-	jl done                                        ; terminate procedure if i<1
-	cmp bl, [CaseTable + 3]                        ; compares i to 4
-	jg done                                        ; terminate procedure if i>4
+	mov rdx, 1                                      ; set rdx to one in case of error
+
+	mov bl, i                                       ; bl = i
+	mov rsi, offset CaseTable                       ; rsi points to first element of caseTable 
+	cmp bl, byte ptr [rsi]                          ; compares i to first element of caseTable
+	jl done                                         ; terminate procedure if i<first element of caseTable
+	add rsi, TableCount - 1                         ; rsi points to last element of caseTable
+	cmp bl, byte ptr [rsi]                          ; compares i to last element of caseTable
+	jg done                                         ; terminate procedure if i>last element of caseTable
 	
-	mov rsi, offset ValueTable                     ; rsi points to ValueTable's first element
-	movsx rbx, i                                   ; rbx = i
-	dec rbx                                        ; rbx is the index of the ith value
-	mov al, [rsi + rbx]                            ; the ith value from ValueTable    
+	mov rdi, offset ValueTable                      ; rdi points to ValueTable's first element
+	movsx rbx, i                                    ; rbx = i
+	dec rbx                                         ; rbx is the index of the ith value
+	mov al, [rdi + rbx]                             ; the ith value from ValueTable    
 	mov x, al  
-	xor rdx, rdx                                   ; clears rdx for success                            
+	xor rdx, rdx                                    ; clears rdx for success                            
 
 done:	ret
 SelectCase ENDP
