@@ -48,6 +48,23 @@ x          byte ?                                ; x in switch statement
 ;---------------------------------------------------------
 .code
 main proc
+	                                    
+	mov i, 5                                     ; i = 5
+	call SelectCase                              ; returns without changing x
+
+	mov i, 1                                     ; i = 1
+	call SelectCase                              ; x = 1
+
+	call  ExitProcess
+main endp
+
+;---------------------------------------------------------
+SelectCase PROC uses rax rsi rbx                   ; MASM directive to preserve these registers
+; Receives: nothing
+; Returns: Sets x to the correct value.
+;          Changes the status flags.
+; Requires: nothing
+;---------------------------------------------------------
 	mov bl, i                                      ; bl = i
 	cmp bl, [CaseTable]                            ; compares i to 1
 	jl done                                        ; terminate procedure if i<1
@@ -58,9 +75,9 @@ main proc
 	movsx rbx, i                                   ; rbx = i
 	dec rbx                                        ; rbx is the index of the ith value
 	mov al, [rsi + rbx]                            ; the ith value from ValueTable    
-	mov x, al                                     
+	mov x, al                          
 
-done:	call  ExitProcess
-main endp
+done:	ret
+SelectCase ENDP
 
 end
