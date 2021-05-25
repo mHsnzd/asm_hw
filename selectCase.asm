@@ -50,21 +50,23 @@ x          byte ?                                ; x in switch statement
 main proc
 	                                    
 	mov i, 5                                     ; i = 5
-	call SelectCase                              ; returns without changing x
+	call SelectCase                              ; rdx = 1 (error: 5 is not a case)
 
 	mov i, 1                                     ; i = 1
-	call SelectCase                              ; x = 1
+	call SelectCase                              ; x = 1 rdx = 0
 
 	call  ExitProcess
 main endp
 
+
 ;---------------------------------------------------------
 SelectCase PROC uses rax rsi rbx                   ; MASM directive to preserve these registers
 ; Receives: nothing
-; Returns: Sets x to the correct value.
+; Returns: rdx = 0 in case of success and 1 in case of failure. Sets x to the correct value.
 ;          Changes the status flags.
 ; Requires: nothing
 ;---------------------------------------------------------
+	mov rdx, 1                                     ; set rdx to one in case of error
 	mov bl, i                                      ; bl = i
 	cmp bl, [CaseTable]                            ; compares i to 1
 	jl done                                        ; terminate procedure if i<1
@@ -75,7 +77,8 @@ SelectCase PROC uses rax rsi rbx                   ; MASM directive to preserve 
 	movsx rbx, i                                   ; rbx = i
 	dec rbx                                        ; rbx is the index of the ith value
 	mov al, [rsi + rbx]                            ; the ith value from ValueTable    
-	mov x, al                          
+	mov x, al  
+	xor rdx, rdx                                   ; clears rdx for success                            
 
 done:	ret
 SelectCase ENDP
